@@ -18,6 +18,9 @@ cat > "$APPS/tarot-brainstorm.desktop" <<DESKTOP
 Type=Application
 Name=タロット・ブレインストーミング
 Name[en]=Tarot Brainstorm
+GenericName=Tarot Brainstorm
+GenericName[ja]=タロット
+Keywords=tarot;Tarot;brainstorm;brainstorming;card;cards;spread;タロット;ブレインストーミング;
 Comment=スプレッドにカードを置いて、意味とつながりを書き出す
 Exec=$BIN/tarot-brainstorm
 Icon=tarot-brainstorm
@@ -26,4 +29,6 @@ Categories=Office;
 StartupWMClass=tarot-brainstorm
 DESKTOP
 update-desktop-database "$APPS" >/dev/null 2>&1 || true
+# KDE のメニュー検索のキャッシュを作り直す（無ければ何もしない）
+for k in kbuildsycoca6 kbuildsycoca5; do command -v "$k" >/dev/null 2>&1 && { "$k" >/dev/null 2>&1 || true; break; }; done
 echo "入れました。メニューの「タロット・ブレインストーミング」か、tarot-brainstorm で起動できます"
