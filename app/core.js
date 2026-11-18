@@ -25,9 +25,13 @@
     good: { name: "よい面", color: "#e3c45a" }, act: { name: "行動", color: "#7cc787" }, ask: { name: "問い", color: "#6fb3e0" },
   };
   TB.KIND_KEYS = Object.keys(TB.KINDS);
-  TB.PEN = ["#e8e1cf", "#d8b46a", "#e26d5a", "#6fb3e0", "#8fd18a", "#c59be8"];
-  TB.FRAME_COLORS = ["#d8b46a", "#6fb3e0", "#7cc787", "#e26d5a", "#c59be8"];
-  const DEF = { revOn: true, revProb: 50, pool: "all", method: "crypto", seedText: "", shuffle: "fy", riffles: 7, color: TB.PEN[0],
+  // 白い盤面の色。前の暗い盤面で付けた色は、描くときに読み替える
+  TB.INK = "#2b2d33";
+  const OLD_INK = { "#e8e1cf": "#2b2d33", "#d8b46a": "#8a5a20", "#e26d5a": "#c0392b", "#6fb3e0": "#3b5bdb", "#8fd18a": "#2f8a3e", "#7cc787": "#2f8a3e", "#c59be8": "#7b4fc0", "#a99be0": "#7b4fc0", "#e3c45a": "#8a5a20" };
+  TB.ink = (c) => OLD_INK[String(c || "").toLowerCase()] || c || TB.INK;
+  TB.PEN = [TB.INK];
+  TB.FRAME_COLORS = ["#8b909c"];
+  const DEF = { revOn: true, revProb: 50, pool: "all", method: "crypto", seedText: "", shuffle: "fy", riffles: 7, color: TB.INK,
     promptSets: ["word", "scamper", "hats", "ask", "values", "story"] };
 
   // ================= 保存 =================
@@ -97,7 +101,7 @@
     { id: "tarot:hexagram", group: "タロット", name: "ヘキサグラム（7枚）", desc: "過去・現在・近い未来・自分・相手・アドバイス・結論" },
     { id: "tarot:three", group: "タロット", name: "3枚", desc: "過去・現在・未来" },
     { id: "tarot:one", group: "タロット", name: "1枚", desc: "今いちばん必要な視点" },
-    { id: "photo", group: "タロット", name: "📷 写真から", desc: "並べたカードの写真から読み込む" },
+    { id: "photo", group: "タロット", name: "写真から", desc: "並べたカードの写真から読み込む" },
     { id: "iching:pair", group: "易", name: "本卦と之卦", desc: "コインを6回投げて卦を立てる" },
     { id: "prompts3", group: "発想カード", name: "3枚引いて考える", desc: "テーマのまわりに発想カードを3枚" },
   ];
@@ -114,7 +118,7 @@
       theme({ x: 0, y: -400 });
       frame(-460, -330, 440, 320, "軸1 低 × 軸2 高"); frame(20, -330, 440, 320, "軸1 高 × 軸2 高");
       frame(-460, 20, 440, 320, "軸1 低 × 軸2 低"); frame(20, 20, 440, 320, "軸1 高 × 軸2 低");
-      b.items.push({ id: TB.uid(), type: "text", x: -120, y: 350, text: "← 軸1（名前を書き換え）→", color: TB.PEN[1] });
+      b.items.push({ id: TB.uid(), type: "text", x: -120, y: 350, text: "← 軸1（名前を書き換え）→", color: "#6a6f7d" });
     } else if (tid === "proscons") {
       theme({ x: 0, y: -300 });
       frame(-460, -230, 440, 460, "良い点", "#7cc787"); frame(20, -230, 440, 460, "悪い点", "#e26d5a");

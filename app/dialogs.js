@@ -43,7 +43,7 @@
       return h("span", { class: "mini " + n.deck, style: st + (n.deck === "prompt" ? `;--pc:${it.color}` : ""), text: n.deck === "iching" ? it.glyph : it.name });
     }));
     const ideas = b.nodes.filter((n) => n.t === "idea").slice(0, 4);
-    return h("div", { class: "lib-ideas" }, ideas.map((n) => h("span", { style: `--kc:${TB.KINDS[n.kind].color}`, text: n.text })));
+    return h("div", { class: "lib-ideas" }, ideas.map((n) => h("span", { text: n.text })));
   }
   TB.openLibrary = () => {
     const q = h("input", { class: "big", placeholder: "探す（題・アイデア・カード名）" });
@@ -61,7 +61,7 @@
             onkeydown: (e) => { if (e.key === "Enter") e.currentTarget.click(); } },
           preview(b), h("b", { class: "lib-title", text: b.title || "（無題）" }),
           h("small", { text: `${tpl ? tpl.name : ""}　${new Date(b.updated).toLocaleString("ja-JP", { dateStyle: "short", timeStyle: "short" })}　アイデア ${b.nodes.filter((n) => n.t === "idea").length}` }),
-          h("button", { type: "button", class: "lib-del icon", title: "削除", text: "🗑", onclick: (e) => {
+          h("button", { type: "button", class: "lib-del icon", title: "削除", text: "消す", onclick: (e) => {
             e.stopPropagation();
             if (!confirm(`「${b.title || "（無題）"}」を削除しますか？（元に戻せません）`)) return;
             delete TB.store.boards[b.id];
@@ -166,7 +166,7 @@
       area.replaceChildren(titleIn, h("div", { class: "ph-review" }, left, right));
       draw();
     }
-    TB.openDialog("photo", h("h2", { text: "📷 写真から読み込む（タロット）" }), area);
+    TB.openDialog("photo", h("h2", { text: "写真から読み込む（タロット）" }), area);
     if (img) analyze(img); else start();
   };
 })();

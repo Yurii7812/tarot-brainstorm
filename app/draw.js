@@ -74,7 +74,7 @@
       b.draws.push({ at: Date.now(), deck: deckId, method: st.method, seed: res.seed, shuffle: st.shuffle, riffles: st.riffles, revOn: st.revOn, revProb: st.revProb, pool: st.pool, n: count });
     }
     // 山札から配る動き
-    const dk = $("#deck").getBoundingClientRect(), from = TB.toWorld(dk.left + dk.width / 2, dk.top + dk.height / 2);
+    const dk = $("#board").getBoundingClientRect(), from = TB.toWorld(dk.left + dk.width / 2, dk.top - 40);
     placed.forEach((n, i) => TB.dealing.set(n.id, { i, dx: from.x - n.x, dy: from.y - n.y }));
     TB.save(); TB.renderBoard(); if (TB.view.auto) TB.fit();
     setTimeout(() => TB.dealing.clear(), 200);
@@ -109,31 +109,27 @@
       h("input", { type: "range", min, max, value: st[k], oninput: (e) => { set(k, +e.target.value); e.target.nextSibling.textContent = e.target.value + unit; } }),
       h("span", { text: st[k] + unit, style: "min-width:44px;text-align:right" }));
     const go = (d) => () => { TB.closeFloats(); TB.doDraw(d); };
-    pop.replaceChildren(
+    const sel = (k, opts, re) => h("select", { onchange: (e) => set(k, e.target.value, re) }, opts.map(([v, t]) => h("option", { value: v, selected: st[k] === v, text: t })));
+    const field = (label, ...kids) => h("label", { class: "dm-field" }, h("span", { text: label }), ...kids);
+    pop.replaceChildren(...[
       h("div", { class: "dm-decks" },
-        h("button", { type: "button", onclick: go("tarot") }, h("b", { text: "🂠 タロット" }), h("small", { text: "空いた枠を埋める／選んだものにつなぐ" })),
-        h("button", { type: "button", onclick: go("iching") }, h("b", { text: "☯ 易" }), h("small", { text: "コインを6回投げて卦を立てる" })),
-        h("button", { type: "button", onclick: go("prompt") }, h("b", { text: "💡 発想カード" }), h("small", { text: "選んだアイデアにつなぐ" }))),
-      h("div", {}, h("h4", { text: "発想カードの種類" }), h("div", { class: "checks" }, window.Prompts.SETS.map((s) => h("label", {},
+        h("button", { type: "button", onclick: go("tarot") }, h("b", { text: "タロット" }), h("small", { text: "空いた枠を埋める／選んだものにつなぐ" })),
+        h("button", { type: "button", onclick: go("iching") }, h("b", { text: "易" }), h("small", { text: "コインを6回投げて卦を立てる" })),
+        h("button", { type: "button", onclick: go("prompt") }, h("b", { text: "発想カード" }), h("small", { text: "選んだものにつなぐ" }))),
+      h("hr"),
+      h("label", { class: "dm-check" }, h("span", { text: "逆位置を出す（タロット）" }), h("input", { type: "checkbox", checked: st.revOn, onchange: (e) => set("revOn", e.target.checked, true) })),
+      st.revOn ? h("div", { class: "row" }, h("span", { class: "muted", text: "出やすさ" }), range("revProb", 1, 99, "%").children[0], h("span", { class: "muted", text: st.revProb + "%", style: "min-width:34px;text-align:right" })) : null,
+      field("使うカード（タロット）", sel("pool", [["all", "78枚すべて"], ["major", "大アルカナだけ"], ["minor", "小アルカナだけ"]])),
+      field("混ぜ方（タロット）", sel("shuffle", [["fy", "完全に混ぜる"], ["riffle", "リフル＋カット（手で切る再現）"]], true)),
+      st.shuffle === "riffle" ? h("div", { class: "row" }, h("span", { class: "muted", text: "リフルの回数" }), range("riffles", 1, 12, "回").children[0], h("span", { class: "muted", text: st.riffles + "回", style: "min-width:34px;text-align:right" })) : null,
+      field("乱数の元", sel("method", Object.entries(METHODS).map(([k, [t, d]]) => [k, `${t}（${d}）`]), true)),
+      st.method === "word" ? h("input", { value: st.seedText, placeholder: "空なら: " + defaultSeed(), oninput: (e) => set("seedText", e.target.value) }) : null,
+      h("details", { class: "help" }, h("summary", { text: "発想カードの種類" }), h("div", { class: "checks" }, window.Prompts.SETS.map((s) => h("label", {},
         h("input", { type: "checkbox", checked: st.promptSets.includes(s.id), onchange: (e) => set("promptSets", e.target.checked ? [...st.promptSets, s.id] : st.promptSets.filter((x) => x !== s.id)) }), s.name)))),
-      h("div", {}, h("h4", { text: "タロット: 逆位置" }), seg([[false, "なし"], [true, "あり"]], st.revOn, (v) => set("revOn", v, true)),
-        st.revOn ? h("div", { style: "margin-top:6px" }, h("div", { class: "desc", text: "逆位置の出やすさ" }), range("revProb", 1, 99, "%")) : null),
-      h("div", {}, h("h4", { text: "タロット: 使うカード" }), seg(Object.entries(POOLS), st.pool, (v) => set("pool", v, true))),
-      h("div", {}, h("h4", { text: "タロット: 混ぜ方" }), seg([["fy", "一度で完全に"], ["riffle", "手で切る再現"]], st.shuffle, (v) => set("shuffle", v, true)),
-        st.shuffle === "riffle" ? h("div", { style: "margin-top:6px" }, h("div", { class: "desc", text: "リフルシャッフルの回数（最後にカット）。7回で十分混ざると言われる。少ないと元の並びが残る" }), range("riffles", 1, 12, "回")) : null),
-      h("div", {}, h("h4", { text: "乱数の元（全部のデッキ共通）" }),
-        h("div", { class: "radio" }, Object.entries(METHODS).map(([k, [t, d]]) => h("label", {},
-          h("input", { type: "radio", name: "m", checked: st.method === k, onchange: () => set("method", k, true) }), h("span", {}, t, " ", h("small", { text: d })))))),
-      st.method === "word" ? h("input", { value: st.seedText, placeholder: "空なら: " + defaultSeed(), oninput: (e) => set("seedText", e.target.value) }) : null);
+    ].filter(Boolean));
     pop.hidden = false;
     const b = $("#btn-drawmenu").getBoundingClientRect();
-    pop.style.left = Math.max(8, Math.min(b.left - 200, innerWidth - 430)) + "px"; pop.style.top = b.bottom + 8 + "px";
+    pop.style.left = Math.max(8, Math.min(b.right - pop.offsetWidth, innerWidth - pop.offsetWidth - 8)) + "px"; pop.style.top = b.bottom + 6 + "px";
   };
 
-  TB.renderDeckCount = () => {
-    const b = TB.B(), d = b.layout ? TB.LAYOUTS[b.layout].deck : null;
-    const el = $("#deck");
-    el.classList.toggle("other", d !== "tarot");
-    $("#deck-label").textContent = d === "iching" ? "☯ 易" : d === "tarot" ? "🂠 タロット" : "💡 発想";
-  };
 })();

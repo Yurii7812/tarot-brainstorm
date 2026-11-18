@@ -34,7 +34,7 @@
   TB.tipBody = (id) => {
     const n = TB.node(id); if (!n || n.t !== "card") return [];
     const it = TB.item(n), out = [h("div", { class: "tt-pos", text: TB.slotName(n) }), n.hint ? h("div", { class: "tt-hint", text: n.hint }) : null];
-    if (!it) { out.push(h("div", { class: "tt-note", text: "クリックしてカード名を打つ／🂠 引く で置く" })); return out; }
+    if (!it) { out.push(h("div", { class: "tt-note", text: "クリックしてカード名を打つ／「引く」で置く" })); return out; }
     if (n.deck === "tarot") out.push(
       h("div", { class: "tt-card" }, h("b", { text: it.ja }), h("small", { text: "  " + it.en }), h("span", { class: "badge" + (n.rev ? " rev" : ""), text: n.rev ? "逆位置" : "正位置" })),
       h("div", { class: "kw" + (n.rev ? "" : " on") }, h("i", { text: "正" }), it.up), h("div", { class: "kw" + (n.rev ? " on" : "") }, h("i", { text: "逆" }), it.rv));
@@ -50,8 +50,7 @@
     const n = TB.node(id), b = TB.B(), it = TB.item(n), items = [];
     const del = () => { TB.snap(); b.nodes = b.nodes.filter((m) => m.id !== id); b.links = b.links.filter((l) => l.a !== id && l.b !== id); TB.sel = TB.sel.filter((s) => s !== id); TB.save(); TB.renderAll(); };
     if (n.t === "idea") {
-      for (const k of TB.KIND_KEYS) items.push([h("span", { class: "dot", style: `background:${TB.KINDS[k].color}` }), () => TB.setKind(id, k)].length && [`${n.kind === k ? "✓ " : "　"}${TB.KINDS[k].name}`, () => TB.setKind(id, k)]);
-      items.push("-", ["書き直す", () => TB.editIdea(id)], ["ここから広げる（Tab）", () => TB.newIdea(id)], ["子を並べ直す", () => TB.arrangeKids(id)]);
+      items.push(["書き直す", () => TB.editIdea(id)], ["ここから広げる（Tab）", () => TB.newIdea(id)], ["子を並べ直す", () => TB.arrangeKids(id)]);
       if (!n.center) items.push(["消す", del, "danger"]);
     } else {
       if (it && n.deck === "tarot") items.push([n.rev ? "正位置にする" : "逆位置にする", () => { TB.snap(); n.rev = !n.rev; TB.save(); TB.renderAll(); }]);
@@ -59,19 +58,15 @@
       if (!n.slot) items.push(["この枠ごと消す", del, "danger"]);
     }
     const cut = b.links.filter((l) => l.a === id || l.b === id);
-    if (cut.length) items.push(["-"][0], [`つながりを全部消す（${cut.length}本）`, () => { TB.snap(); b.links = b.links.filter((l) => !cut.includes(l)); TB.save(); TB.renderAll(); }]);
+    if (cut.length) items.push("-", [`つながりを全部消す（${cut.length}本）`, () => { TB.snap(); b.links = b.links.filter((l) => !cut.includes(l)); TB.save(); TB.renderAll(); }]);
     TB.menu(items, x, y);
   };
   TB.linkMenu = (id, x, y) => {
-    const b = TB.B(), l = b.links.find((q) => q.id === id); if (!l) return;
-    const set = (k) => () => { TB.snap(); l.kind = k; TB.save(); TB.renderBoard(); };
-    TB.menu([[(l.kind === "line" ? "✓ " : "　") + "細い線（つながり）", set("line")], [(l.kind === "flow" ? "✓ " : "　") + "→ 流れ", set("flow")], [(l.kind === "clash" ? "✓ " : "　") + "↔ ぶつかり", set("clash")],
-      "-", ["ひとことを書く", () => TB.openLinkPop(id, true)], ["向きを逆にする", () => { TB.snap(); [l.a, l.b] = [l.b, l.a]; TB.save(); TB.renderBoard(); }], ["消す", () => TB.removeLink(id), "danger"]], x, y);
+    TB.menu([["ひとことを書く", () => TB.openLinkPop(id, true)], ["消す", () => TB.removeLink(id), "danger"]], x, y);
   };
   TB.frameMenu = (id, x, y) => {
-    const b = TB.B(), f = b.frames.find((q) => q.id === id); if (!f) return;
+    const b = TB.B();
     TB.menu([["名前を変える", () => TB.editFrameTitle(id)],
-      ...TB.FRAME_COLORS.map((c) => [h("span", {}, h("span", { class: "dot", style: `background:${c}` }), f.color === c ? " 今の色" : " この色にする"), () => { TB.snap(); f.color = c; TB.save(); TB.renderBoard(); }]),
       "-", ["枠だけ消す（中身は残す）", () => { TB.snap(); b.frames = b.frames.filter((q) => q.id !== id); TB.save(); TB.renderBoard(); }, "danger"]], x, y);
   };
   TB.removeLink = (id) => { TB.snap(); TB.B().links = TB.B().links.filter((l) => l.id !== id); if (TB.selLink === id) TB.selLink = null; $("#pop").hidden = true; TB.save(); TB.renderBoard(); };
@@ -83,16 +78,13 @@
     const r = TB.routeLinks(b).find((x) => x.l.id === id); if (!r) return;
     const mid = TB.toScreen(r.g.mid.x, r.g.mid.y), br = $("#board").getBoundingClientRect();
     let armed = true;
-    const kb = (k, t) => h("button", { type: "button", class: l.kind === k ? "on" : null, text: t, onclick: () => { TB.snap(); l.kind = k; TB.save(); TB.renderBoard(); TB.openLinkPop(id); } });
     const input = h("input", { value: l.label, placeholder: "ひとこと（Enter で閉じる）",
       oninput: (e) => { if (armed) { TB.snap(); armed = false; } l.label = e.target.value; TB.save(); TB.renderBoard(); TB.markSel(); },
       onkeydown: (e) => { if (e.key === "Enter" || e.key === "Escape") { e.preventDefault(); TB.closeFloats(); } } });
     const pop = $("#pop");
-    pop.replaceChildren(kb("line", "線"), kb("flow", "→ 流れ"), kb("clash", "↔ ぶつかり"), input,
-      h("button", { type: "button", class: "icon", title: "向きを逆に", text: "⇄", onclick: () => { TB.snap(); [l.a, l.b] = [l.b, l.a]; TB.save(); TB.renderBoard(); TB.openLinkPop(id); } }),
-      h("button", { type: "button", class: "icon", title: "消す（Delete）", text: "🗑", onclick: () => TB.removeLink(id) }));
+    pop.replaceChildren(input, h("button", { type: "button", class: "danger", text: "線を消す", title: "Delete", onclick: () => TB.removeLink(id) }));
     pop.hidden = false;
-    pop.style.left = Math.max(300, Math.min(br.width - 300, mid.x - br.left)) + "px";
+    pop.style.left = Math.max(200, Math.min(br.width - 200, mid.x - br.left)) + "px";
     pop.style.top = Math.max(4, Math.min(br.height - 60, mid.y - br.top)) + "px";
     if (focus) input.focus();
   };
@@ -132,7 +124,7 @@
   function cardDetail(n, opt) {
     const it = TB.item(n), D = TB.deckOf(n);
     const btns = [];
-    if (it && n.deck === "tarot") btns.push(h("button", { type: "button", text: n.rev ? "↺ 正位置に" : "↻ 逆位置に", onclick: () => { TB.snap(); n.rev = !n.rev; TB.save(); TB.renderAll(); } }));
+    if (it && n.deck === "tarot") btns.push(h("button", { type: "button", text: n.rev ? "正位置にする" : "逆位置にする", onclick: () => { TB.snap(); n.rev = !n.rev; TB.save(); TB.renderAll(); } }));
     if (it) btns.push(h("button", { type: "button", text: "＋アイデア", title: "このカードから広げる（Tab）", onclick: () => TB.newIdea(n.id) }));
     if (it) btns.push(h("button", { type: "button", text: "替える", onclick: () => { const w = $("#d-in"); w.hidden = !w.hidden; if (!w.hidden) $("#card-input").focus(); } }));
     const head = h("div", { class: "d-head" }, bigCard(n), h("div", { class: "d-meta" },
@@ -151,7 +143,7 @@
   }
   function meaning(n, it) {
     const box = h("div", { class: "d-mean" });
-    const askChip = (q) => chip("❓ " + q, () => { TB.snap(); const a = TB.addIdea(n.id, q, "ask"); TB.renderBoard(); TB.select(a.id, { quiet: true }); TB.newIdea(a.id); }, "ask");
+    const askChip = (q) => chip(q, () => { TB.snap(); const a = TB.addIdea(n.id, q, "ask"); TB.renderBoard(); TB.select(a.id, { quiet: true }); TB.newIdea(a.id); }, "ask");
     if (n.deck === "tarot") {
       box.append(
         h("div", { class: "kw" + (n.rev ? "" : " on") }, h("i", { text: "正" }), h("b", { text: it.up }), h("div", { class: "kt", text: it.upText })),
@@ -177,17 +169,14 @@
     const b = TB.B(), out = h("div", { class: "d-rel" }, h("h4", { text: "つながり" }));
     const cardLinks = b.links.filter((l) => (l.a === n.id || l.b === n.id) && TB.node(l.a === n.id ? l.b : l.a)?.t === "card");
     for (const l of cardLinks) {
-      const o = TB.node(l.a === n.id ? l.b : l.a), dir = l.kind === "clash" ? "↔" : l.a === n.id ? "→" : "←";
-      out.append(h("button", { type: "button", class: "rel " + l.kind, onclick: () => TB.select(o.id) }, h("span", { text: dir }), h("b", { text: nodeLabel(o) }), l.label ? h("span", { class: "rl", text: "「" + l.label + "」" }) : null));
+      const o = TB.node(l.a === n.id ? l.b : l.a);
+      out.append(h("button", { type: "button", class: "rel", onclick: () => TB.select(o.id) }, h("b", { text: nodeLabel(o) }), l.label ? h("span", { class: "rl", text: "「" + l.label + "」" }) : null));
     }
     // このカードから広げたアイデア（深さ2まで）
     const kids = kidsOf(n.id).filter((k) => k.t === "idea");
     if (kids.length) {
-      const counts = {}; const walk = (id, d, seen) => { for (const k of kidsOf(id)) if (k.t === "idea" && !seen.has(k.id)) { seen.add(k.id); counts[k.kind] = (counts[k.kind] || 0) + 1; if (d < 6) walk(k.id, d + 1, seen); } };
-      walk(n.id, 0, new Set());
-      out.append(h("div", { class: "kcount" }, Object.entries(counts).map(([k, c]) => h("span", { style: `--kc:${TB.KINDS[k].color}`, text: `${TB.KINDS[k].name} ${c}` }))));
-      for (const k of kids.slice(0, 8)) out.append(h("button", { type: "button", class: "rel idea", style: `--kc:${TB.KINDS[k.kind].color}`, onclick: () => { TB.select(k.id); TB.reveal(k); } },
-        h("span", { class: "dot" }), h("span", { text: k.text + (kidsOf(k.id).length ? `（＋${kidsOf(k.id).length}）` : "") })));
+      for (const k of kids.slice(0, 8)) out.append(h("button", { type: "button", class: "rel idea", onclick: () => { TB.select(k.id); TB.reveal(k); } },
+        h("span", { text: k.text + (kidsOf(k.id).length ? `（＋${kidsOf(k.id).length}）` : "") })));
     }
     if (!cardLinks.length && !kids.length) out.append(h("div", { class: "muted", text: "まだありません。カードをクリックすると、つながった入力欄が出ます。別のカードへドラッグするとつながります" }));
     return out;
@@ -228,13 +217,12 @@
     const par = TB.parentOf(n.id), kids = kidsOf(n.id);
     return [
       h("h3", { text: n.center ? "テーマ" : "アイデア" }),
-      h("div", { class: "kinds" }, TB.KIND_KEYS.map((k, i) => h("button", { type: "button", class: n.kind === k ? "on" : null, style: `--kc:${TB.KINDS[k].color}`, title: `Ctrl+${i + 1}（書いている間）`, onclick: () => TB.setKind(n.id, k) }, TB.KINDS[k].name))),
       h("textarea", { class: "grow", value: n.text, ...lazy((v) => { n.text = v; TB.renderBoard(); TB.markSel(); }) }),
       par ? h("div", { class: "d-rel" }, h("h4", { text: "元" }), h("button", { type: "button", class: "rel", onclick: () => TB.select(par.id) }, h("b", { text: nodeLabel(par) }))) : null,
-      kids.length ? h("div", { class: "d-rel" }, h("h4", { text: `ここから（${kids.length}）` }), kids.map((k) => h("button", { type: "button", class: "rel idea", style: k.t === "idea" ? `--kc:${TB.KINDS[k.kind].color}` : null, onclick: () => TB.select(k.id) }, h("span", { class: "dot" }), h("span", { text: nodeLabel(k) })))) : null,
+      kids.length ? h("div", { class: "d-rel" }, h("h4", { text: `ここから（${kids.length}）` }), kids.map((k) => h("button", { type: "button", class: "rel idea", onclick: () => TB.select(k.id) }, h("span", { text: nodeLabel(k) })))) : null,
       h("div", { class: "d-btns" },
         h("button", { type: "button", text: "＋広げる（Tab）", onclick: () => TB.newIdea(n.id) }),
-        h("button", { type: "button", text: "💡 発想カードをつなぐ", onclick: () => TB.doDraw("prompt") }),
+        h("button", { type: "button", text: "発想カードをつなぐ", onclick: () => TB.doDraw("prompt") }),
         kids.length ? h("button", { type: "button", text: "子を並べ直す", onclick: () => TB.arrangeKids(n.id) }) : null),
     ];
   }
@@ -245,71 +233,23 @@
   }
   function multi(ids) {
     return [h("h3", { text: `${ids.length}個を選択中` }),
-      h("div", { class: "d-btns" }, h("button", { type: "button", text: "枠で囲む（Ctrl+G）", onclick: TB.groupSelection }),
-        h("button", { type: "button", text: "選択を外す", onclick: () => TB.select([]) })),
-      h("p", { class: "muted", text: "右ボタンの長押しでドラッグすると一緒に動きます" })];
+      h("div", { class: "d-btns" }, h("button", { type: "button", text: "選択を外す", onclick: () => TB.select([]) }))];
   }
 
-  // ---- 何も選んでいないとき: 概要と一覧表示 ----
-  let tab = "summary";
-  TB.setDrawerTab = (t) => { tab = t; TB.select([]); };
+  // ---- 何も選んでいないとき: 概要 ----
   function overview() {
     const b = TB.B();
-    const tabs = h("div", { class: "tabs" },
-      h("button", { type: "button", class: tab === "summary" ? "on" : null, text: "概要", onclick: () => TB.setDrawerTab("summary") }),
-      h("button", { type: "button", class: tab === "outline" ? "on" : null, text: "一覧表示（Ctrl+E）", onclick: () => TB.setDrawerTab("outline") }));
-    if (tab === "outline") return [tabs, outline()];
     const ideas = b.nodes.filter((n) => n.t === "idea" && !n.center), cards = b.nodes.filter((n) => n.t === "card");
-    const counts = TB.KIND_KEYS.map((k) => [k, ideas.filter((n) => n.kind === k).length]).filter(([, c]) => c);
     const tpl = TB.TEMPLATES.find((t) => t.id === b.template);
-    return [tabs,
+    return [
       h("div", { class: "muted", text: `${tpl ? tpl.group + " ・ " + tpl.name : ""}　カード ${cards.length}　アイデア ${ideas.length}` }),
-      counts.length ? h("div", { class: "kcount" }, counts.map(([k, c]) => h("span", { style: `--kc:${TB.KINDS[k].color}`, text: `${TB.KINDS[k].name} ${c}` }))) : null,
       cards.length ? h("div", { class: "ov-list" }, cards.map((n) => h("button", { type: "button", onclick: () => TB.select(n.id) }, h("b", { text: TB.slotName(n) }), h("span", { text: TB.item(n) ? TB.deckOf(n).short(TB.item(n), n.rev) : "未設定" })))) : null,
-      h("h3", { text: "まとめ" }),
+      h("label", { text: "まとめ" }),
       h("textarea", { class: "grow", placeholder: "全体としての結論・次にやること", value: b.summary, ...lazy((v) => (b.summary = v)) }),
       b.draws.length ? h("div", { class: "muted", text: "最後に引いた: " + TB.drawText(b.draws[b.draws.length - 1]) }) : null,
       h("details", { class: "help" }, h("summary", { text: "操作とキー" }),
-        h("p", { text: "盤面: クリック＝文字 / ドラッグ＝ペン / カードやアイデアをクリック＝つながった入力欄 / ノードから別のノードへドラッグ＝つなぐ（空きに離すと新しいアイデア）/ 右ボタン長押し・右ドラッグ＝動かす（空きなら画面を動かす）/ 右クリック＝メニュー（文字と線は消す）/ Shift+ドラッグ＝範囲選択 / ホイール＝拡大" }),
-        h("p", { text: "書いている間: Enter＝次のアイデア / Tab＝そこから広げる / Shift+Tab＝元へ / Ctrl+1〜6＝種類 / Esc＝終わる" }),
-        h("p", { text: "Ctrl+D 引く / Ctrl+G 枠で囲む / Ctrl+E 一覧表示 / Ctrl+O 保存した一覧 / Ctrl+N 新規 / Ctrl+S 書き出し / Ctrl+Z・Y 元に戻す・やり直す / Ctrl+0 全体 / 矢印 近くへ移る / Delete 消す" }))];
-  }
-
-  // ---- 一覧表示（箇条書きの木）。ここで書いた内容は盤面にそのまま反映される ----
-  function outline() {
-    const b = TB.B(), seen = new Set(), wrap = h("div", { class: "outline" });
-    const inputs = [];
-    let renderT;
-    const later = () => { clearTimeout(renderT); renderT = setTimeout(() => TB.renderBoard(), 200); };
-    const refocus = (id) => { TB.renderBoard(); TB.renderDrawer(); const el = $(`.outline [data-oid="${id}"]`); if (el) el.focus(); };
-    const row = (n, depth) => {
-      if (seen.has(n.id)) return; seen.add(n.id);
-      const color = n.t === "idea" ? TB.KINDS[n.kind].color : "#d8b46a";
-      let el;
-      if (n.t === "idea") {
-        el = h("input", { value: n.text, "data-oid": n.id, ...lazy((v) => { n.text = v; later(); }) });
-        el.addEventListener("keydown", (e) => {
-          if (e.isComposing) return;
-          if (e.key === "Enter") { e.preventDefault(); const p = TB.parentOf(n.id); TB.snap(); const m = TB.addIdea(p ? p.id : null, "", n.kind); refocus(m.id); }
-          else if (e.key === "Tab" && !e.shiftKey) { e.preventDefault(); TB.snap(); const m = TB.addIdea(n.id, "", "note"); refocus(m.id); }
-          else if (e.key === "Backspace" && !el.value && !n.center) {
-            e.preventDefault(); TB.snap(); const i = inputs.indexOf(el), prev = inputs[i - 1];
-            b.nodes = b.nodes.filter((m) => m.id !== n.id); b.links = b.links.filter((l) => l.a !== n.id && l.b !== n.id); TB.save();
-            refocus(prev ? prev.dataset.oid : null);
-          } else if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); const i = inputs.indexOf(el), nx = inputs[i + (e.key === "ArrowDown" ? 1 : -1)]; if (nx) nx.focus(); }
-        });
-      } else {
-        el = h("button", { type: "button", class: "o-card", "data-oid": n.id, text: nodeLabel(n), onclick: () => TB.select(n.id),
-          onkeydown: (e) => { if (e.key === "Tab" || e.key === "Enter") { e.preventDefault(); TB.snap(); const m = TB.addIdea(n.id, "", "note"); refocus(m.id); } } });
-      }
-      inputs.push(el);
-      wrap.append(h("div", { class: "o-row", style: `padding-left:${depth * 18}px;--kc:${color}` }, h("span", { class: "dot" }), el));
-      for (const k of kidsOf(n.id)) row(k, depth + 1);
-    };
-    const roots = [...b.nodes.filter((n) => n.center), ...b.nodes.filter((n) => n.t === "card"), ...b.nodes.filter((n) => n.t === "idea" && !n.center && !TB.parentOf(n.id))];
-    for (const r of roots) row(r, 0);
-    if (!roots.length) wrap.append(h("div", { class: "muted", text: "まだ何もありません" }));
-    wrap.append(h("button", { type: "button", class: "o-add", text: "＋ 新しい項目", onclick: () => { TB.snap(); const c = b.nodes.find((n) => n.center); const m = TB.addIdea(c ? c.id : null, "", "note"); refocus(m.id); } }));
-    return [wrap, h("p", { class: "muted", text: "Enter＝同じ階層に足す / Tab＝下に足す / 空で Backspace＝消す / ↑↓ 移動" })];
+        h("p", { text: "クリック＝文字 / ドラッグ＝ペン / カードや文字をクリック＝つながった入力欄 / カードや文字から別のものへドラッグ＝つなぐ（空きに離すと新しい文字）/ Ctrl+ドラッグ＝動かす（空きなら画面を動かす）/ 右クリック＝消す・メニュー / ホイール＝拡大" }),
+        h("p", { text: "書いている間: Enter＝次 / Tab＝そこから広げる / Shift+Tab＝元へ / Esc＝終わる" }),
+        h("p", { text: "Ctrl+D 引く / Ctrl+N 新規 / Ctrl+O 一覧 / Ctrl+S 書き出し / Ctrl+Z・Y 元に戻す・やり直す / Ctrl+0 全体 / 矢印 近くへ移る / Delete 消す" }))];
   }
 })();

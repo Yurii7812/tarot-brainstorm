@@ -4,14 +4,10 @@
   const TB = window.TB, { h, $ } = TB;
 
   TB.renderHeader = () => {
-    const b = TB.B(), st = TB.store.settings, tpl = TB.TEMPLATES.find((t) => t.id === b.template);
+    const b = TB.B(), tpl = TB.TEMPLATES.find((t) => t.id === b.template);
     if (document.activeElement !== $("#title")) $("#title").value = b.title;
     $("#layout-chip").textContent = tpl ? tpl.name : "自由";
     $("#layout-chip").title = (tpl ? tpl.group + ": " + tpl.desc : "") + "（作ったあとは変えられません）";
-    $("#btn-rev").textContent = st.revOn ? `逆位置あり ${st.revProb}%` : "逆位置なし";
-    $("#btn-rev").classList.toggle("on", st.revOn);
-    $("#colors").replaceChildren(...TB.PEN.map((c) => h("button", { type: "button", class: "sw" + (st.color === c ? " on" : ""), style: `background:${c}`, title: "ペンと文字の色",
-      onclick: () => { st.color = c; TB.persistSoon(); TB.renderHeader(); } })));
   };
   TB.renderAll = () => { TB.renderHeader(); TB.renderBoard(); TB.renderDrawer({ quiet: true }); };
 
@@ -28,16 +24,11 @@
 
   const on = (id, f) => $(id).addEventListener("click", f);
   on("#btn-draw", () => TB.doDraw());
-  on("#deck", () => TB.doDraw());
   on("#btn-drawmenu", () => { if ($("#drawopt").hidden) TB.openDrawMenu(); else TB.closeFloats(); });
-  on("#btn-rev", () => { TB.store.settings.revOn = !TB.store.settings.revOn; TB.persistSoon(); TB.renderHeader(); });
-  on("#btn-group", () => TB.groupSelection());
   on("#btn-undo", () => TB.undo());
   on("#btn-redo", () => TB.redo());
-  on("#btn-fit", () => TB.fit());
   on("#btn-lib", () => TB.openLibrary());
   on("#btn-new", () => TB.openNew());
-  on("#btn-photo", () => TB.openPhoto(""));
   on("#btn-export", () => TB.exportAll());
 
   // 選んでいるものを消す（スプレッドの枠のカードは中身だけ外す）
@@ -62,8 +53,6 @@
       if (k === "z" && !typing) return run(e.shiftKey ? TB.redo : TB.undo);
       if (k === "y" && !typing) return run(TB.redo);
       if (k === "d") return run(() => TB.doDraw());
-      if (k === "g") return run(TB.groupSelection);
-      if (k === "e") return run(() => TB.setDrawerTab("outline"));
       if (k === "o") return run(TB.openLibrary);
       if (k === "n") return run(TB.openNew);
       if (k === "s") return run(TB.exportAll);
@@ -104,8 +93,6 @@
     e.preventDefault(); const i = new Image(); i.onload = () => TB.openPhoto("", i); i.src = URL.createObjectURL(f);
   });
 
-  $("#deck").querySelectorAll("img").forEach((i) => (i.src = window.Cards.BACK));
-  $("#mix").querySelectorAll("img").forEach((i) => (i.src = window.Cards.BACK));
   window.TarotApp = TB; // 試験用
   TB.init();
   TB.renderAll();
