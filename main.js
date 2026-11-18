@@ -10,9 +10,11 @@ protocol.registerSchemesAsPrivileged([
 function createWindow() {
   Menu.setApplicationMenu(null);
   const win = new BrowserWindow({
-    width: 1400, height: 950, title: 'タロット・ブレインストーミング',
+    width: 1400, height: 950, title: 'タロット・ブレインストーミング', backgroundColor: '#faf9f6', show: false,
+    icon: path.join(__dirname, 'build', 'icon.png'),
     webPreferences: { contextIsolation: true, sandbox: true },
   });
+  win.maximize(); win.once('ready-to-show', () => win.show());
   win.loadURL('app://local/app/index.html');
 }
 
