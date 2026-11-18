@@ -7,28 +7,57 @@
 <link rel="stylesheet" href="app.css">
 </head>
 <body>
-<header>
-  <input id="title" placeholder="質問・テーマ（例: 相手との関係をどうするか）" aria-label="質問・テーマ">
-  <select id="spread" aria-label="スプレッド"></select>
-  <select id="history" aria-label="保存した読み"></select>
-  <button id="btn-new" type="button">新規</button>
-  <button id="btn-del" type="button">削除</button>
-  <button id="btn-md" type="button">.md を出力</button>
-  <button id="btn-png" type="button">画像を出力</button>
-</header>
-<main>
-  <section id="board-wrap"><div id="board"></div></section>
-  <aside id="panel"></aside>
-</main>
-<section id="below">
-  <div id="links"></div>
-  <div id="summary-wrap">
-    <h3>まとめ</h3>
-    <textarea id="summary" rows="5" placeholder="全体としての結論・次にやること"></textarea>
+<header id="bar">
+  <div class="brand">✦ Tarot</div>
+  <input id="title" placeholder="問い・テーマを書く（例: 相手との関係をどうするか）" aria-label="問い・テーマ">
+  <select id="spread" aria-label="スプレッド" title="スプレッド"></select>
+  <div class="grp">
+    <button id="btn-draw" class="primary" type="button" title="山札から伏せて配る（Ctrl+D）">🂠 引く</button>
+    <button id="btn-rev" type="button" title="逆位置を出すか"></button>
+    <button id="btn-drawopt" class="icon" type="button" title="引き方の設定">⚙</button>
+    <button id="btn-reveal" type="button" title="伏せたカードを全部めくる（Ctrl+R）">めくる</button>
+    <button id="btn-add" type="button" title="カードを1枚足す（Ctrl+B）">＋カード</button>
   </div>
-</section>
+  <span class="sep"></span>
+  <div class="grp" id="colors" title="ペンと文字の色"></div>
+  <span class="sep"></span>
+  <div class="grp">
+    <button id="btn-undo" class="icon" type="button" title="元に戻す（Ctrl+Z）">↶</button>
+    <button id="btn-redo" class="icon" type="button" title="やり直す（Ctrl+Y）">↷</button>
+    <button id="btn-fit" class="icon" type="button" title="全体を表示（Ctrl+0）">⤢</button>
+  </div>
+  <span class="sep"></span>
+  <div class="grp">
+    <select id="history" aria-label="保存した読み" title="保存した読み"></select>
+    <button id="btn-new" type="button" title="新しい読み（Ctrl+N）">新規</button>
+    <button id="btn-export" type="button" title=".md と画像を書き出す（Ctrl+S）">書き出し</button>
+    <button id="btn-del" class="icon" type="button" title="この読みを削除">🗑</button>
+  </div>
+</header>
+<div id="main">
+  <section id="board" aria-label="盤面">
+    <div id="world"></div>
+    <div id="deck" title="山札（クリックで引く）"><img alt=""><img alt=""><img alt=""><span id="deck-count"></span></div>
+    <div id="hint">クリック＝文字　ドラッグ＝ペン　カード→カードへドラッグ＝つなぐ　Ctrl+ドラッグ＝動かす　右クリック＝消す　ホイール＝拡大</div>
+    <div id="pop" hidden></div>
+  </section>
+  <aside id="drawer"></aside>
+</div>
+<div id="drawopt" hidden></div>
+<div id="menu" hidden></div>
+<div id="tip" hidden></div>
+<div id="toast" hidden></div>
+<div id="mix" hidden>
+  <div class="mix-box">
+    <div class="mix-deck"><img alt=""><img alt=""><img alt=""></div>
+    <p>カードの上でマウスを動かして、かき混ぜてください</p>
+    <div class="mix-bar"><i></i></div>
+    <button class="cancel" type="button">やめる（Esc）</button>
+  </div>
+</div>
 <script src="cards.js"></script>
 <script src="spreads.js"></script>
+<script src="rng.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
