@@ -3,7 +3,14 @@
   "version": "0.1.0",
   "description": "タロット・ブレインストーミング — スプレッドにカードを置いて、意味とつながりを書き出す",
   "main": "main.js",
-  "scripts": { "start": "electron ." },
+  "scripts": {
+    "start": "electron ."
+  },
   "license": "MIT",
-  "devDependencies": { "electron": "^45.2.3" }
+  "devDependencies": {
+    "electron": "^45.2.3"
+  },
+  "dependencies": {
+    "@techstark/opencv-js": "4.10.0-release.1"
+  }
 }

@@ -55,5 +55,8 @@
     return { picks, seed: seed.label };
   }
 
-  window.Rng = { draw };
+  // 種から乱数の関数を作る（易のコイン投げなど、配る以外にも使う）
+  async function makeRnd(o) { const seed = await makeSeed(o.method, o); return { rnd: prng(seed.bytes), seed: seed.label }; }
+
+  window.Rng = { draw, makeRnd };
 })();

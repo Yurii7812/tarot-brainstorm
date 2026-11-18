@@ -8,17 +8,16 @@
 </head>
 <body>
 <header id="bar">
-  <div class="brand">✦ Tarot</div>
-  <input id="title" placeholder="問い・テーマを書く（例: 相手との関係をどうするか）" aria-label="問い・テーマ">
-  <select id="spread" aria-label="スプレッド" title="スプレッド"></select>
+  <div class="brand" title="ブレインストーミング＋タロット・易・発想カード">✦</div>
+  <input id="title" placeholder="テーマ・問いを書く" aria-label="テーマ・問い">
+  <span id="layout-chip" class="chip-fixed"></span>
   <div class="grp">
-    <button id="btn-draw" class="primary" type="button" title="山札から伏せて配る（Ctrl+D）">🂠 引く</button>
-    <button id="btn-rev" type="button" title="逆位置を出すか"></button>
-    <button id="btn-drawopt" class="icon" type="button" title="引き方の設定">⚙</button>
-    <button id="btn-reveal" type="button" title="伏せたカードを全部めくる（Ctrl+R）">めくる</button>
-    <button id="btn-add" type="button" title="カードを1枚足す（Ctrl+B）">＋カード</button>
+    <button id="btn-draw" class="primary" type="button" title="引く（Ctrl+D）: 空いた枠を埋める／選んだものにつなぐ">🂠 引く</button>
+    <button id="btn-drawmenu" class="icon" type="button" title="デッキを選んで引く・設定">▾</button>
+    <button id="btn-rev" type="button" title="タロットの逆位置を出すか"></button>
   </div>
   <span class="sep"></span>
+  <button id="btn-group" type="button" title="選んだものを枠で囲む（Ctrl+G）">▢ 枠</button>
   <div class="grp" id="colors" title="ペンと文字の色"></div>
   <span class="sep"></span>
   <div class="grp">
@@ -28,18 +27,19 @@
   </div>
   <span class="sep"></span>
   <div class="grp">
-    <select id="history" aria-label="保存した読み" title="保存した読み"></select>
-    <button id="btn-new" type="button" title="新しい読み（Ctrl+N）">新規</button>
+    <button id="btn-lib" type="button" title="保存した一覧（Ctrl+O）">📚 一覧</button>
+    <button id="btn-new" type="button" title="新しく作る（Ctrl+N）">新規</button>
+    <button id="btn-photo" type="button" title="写真からタロットの並びを読み込む">📷</button>
     <button id="btn-export" type="button" title=".md と画像を書き出す（Ctrl+S）">書き出し</button>
-    <button id="btn-del" class="icon" type="button" title="この読みを削除">🗑</button>
   </div>
 </header>
 <div id="main">
   <section id="board" aria-label="盤面">
     <div id="world"></div>
-    <div id="deck" title="山札（クリックで引く）"><img alt=""><img alt=""><img alt=""><span id="deck-count"></span></div>
-    <div id="hint">クリック＝文字　ドラッグ＝ペン　カード→カードへドラッグ＝つなぐ　Ctrl+ドラッグ＝動かす　右クリック＝消す　ホイール＝拡大</div>
+    <div id="deck" title="山札（クリックで引く）"><img alt=""><img alt=""><img alt=""><span id="deck-label"></span></div>
+    <div id="hint">クリック＝書く　ドラッグ＝ペン　ノード→ノード＝つなぐ　右ボタン長押し＝動かす　右クリック＝メニュー　Shift+ドラッグ＝範囲選択</div>
     <div id="pop" hidden></div>
+    <div id="kindbar" hidden></div>
   </section>
   <aside id="drawer"></aside>
 </div>
@@ -47,6 +47,7 @@
 <div id="menu" hidden></div>
 <div id="tip" hidden></div>
 <div id="toast" hidden></div>
+<div id="dlg" hidden></div>
 <div id="mix" hidden>
   <div class="mix-box">
     <div class="mix-deck"><img alt=""><img alt=""><img alt=""></div>
@@ -55,9 +56,20 @@
     <button class="cancel" type="button">やめる（Esc）</button>
   </div>
 </div>
-<script src="cards.js"></script>
-<script src="spreads.js"></script>
+<script src="core.js"></script>
+<script src="decks/tarot-cards.js"></script>
+<script src="decks/tarot-meanings.js"></script>
+<script src="decks/tarot-spreads.js"></script>
+<script src="decks/iching.js"></script>
+<script src="decks/prompts.js"></script>
+<script src="decks/index.js"></script>
 <script src="rng.js"></script>
-<script src="app.js"></script>
+<script src="photo.js"></script>
+<script src="board.js"></script>
+<script src="panels.js"></script>
+<script src="draw.js"></script>
+<script src="dialogs.js"></script>
+<script src="export.js"></script>
+<script src="main.js"></script>
 </body>
 </html>

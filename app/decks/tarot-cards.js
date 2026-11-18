@@ -2,7 +2,7 @@
 // 各スートは エース〜10、ペイジ、ナイト、クイーン、キング（コートの順は小冊子で未確認）。
 // 画像ファイル名の罠: Wands11=ペイジ, 12=ナイト, 13=クイーン, 14=キング。
 (function () {
-  const IMG_DIR = "../assets/cards/rider-waite-720px/";
+  const IMG_DIR = new URL("../../assets/cards/rider-waite-720px/", document.currentScript.src).href; // このファイルの場所から
   const MAJORS = [
     ["愚者", "The Fool", "00_Fool"], ["魔術師", "The Magician", "01_Magician"],
     ["女教皇", "The High Priestess", "02_High_Priestess"], ["女帝", "The Empress", "03_Empress"],

@@ -6,7 +6,7 @@ ROOT=$(cd "$(dirname "$0")/.." && pwd)
 BIN="$HOME/.local/bin"; APPS="$HOME/.local/share/applications"; ICONS="$HOME/.local/share/icons/hicolor/scalable/apps"
 mkdir -p "$BIN" "$APPS" "$ICONS"
 # 部品と Electron 本体（無ければ入れる）
-[ -d "$ROOT/node_modules/electron/dist" ] || (cd "$ROOT" && npm install --no-audit --no-fund && node node_modules/electron/install.js)
+{ [ -d "$ROOT/node_modules/electron/dist" ] && [ -d "$ROOT/node_modules/@techstark/opencv-js" ]; } || (cd "$ROOT" && npm install --no-audit --no-fund && node node_modules/electron/install.js)
 cp "$ROOT/build/icon.svg" "$ICONS/tarot-brainstorm.svg"
 cat > "$BIN/tarot-brainstorm" <<LAUNCHER
 #!/bin/sh

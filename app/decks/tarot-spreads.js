@@ -27,7 +27,6 @@
       id: "one", name: "1枚", w: 420, h: 460, cw: 180,
       pos: [{ id: "card", name: "カード", x: 210, y: 200, hint: "今いちばん必要な視点" }],
     },
-    { id: "free", name: "自由（＋カードで足す）", w: 900, h: 560, cw: 150, pos: [] },
   ];
   window.Spreads = { ALL: SPREADS, BY_ID: Object.fromEntries(SPREADS.map((s) => [s.id, s])) };
 })();

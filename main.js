@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, protocol, net, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, Menu, protocol, net, ipcMain, dialog, session } = require('electron');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -14,9 +14,11 @@ function createWindow() {
   const win = new BrowserWindow({
     width: 1400, height: 950, title: 'タロット・ブレインストーミング', backgroundColor: '#faf9f6', show: false,
     icon: path.join(__dirname, 'build', 'icon.png'),
-    webPreferences: { contextIsolation: true, sandbox: true, preload: path.join(__dirname, 'preload.js') },
+    webPreferences: { contextIsolation: true, sandbox: true, preload: path.join(__dirname, 'preload.js'), backgroundThrottling: false, offscreen: !!process.env.TAROT_TEST },
+    paintWhenInitiallyHidden: true,
   });
-  win.maximize(); win.once('ready-to-show', () => win.show());
+  // TAROT_TEST=1 のときは窓を出さない（試験で利用者の画面を邪魔しない）
+  if (process.env.TAROT_TEST) win.setSize(1600, 1000); else { win.maximize(); win.once('ready-to-show', () => win.show()); }
   win.loadURL('app://local/app/index.html');
 }
 
@@ -37,11 +39,14 @@ ipcMain.handle('save-export', async (ev, { name, md, png }) => {
 });
 
 app.whenReady().then(() => {
+  // 写真の読み込みでカメラを使う（この画面にだけ許可する）
+  session.defaultSession.setPermissionRequestHandler((wc, perm, cb) => cb(perm === 'media' && wc.getURL().startsWith('app://local/')));
   protocol.handle('app', (req) => {
     const rel = decodeURIComponent(new URL(req.url).pathname);
     const file = path.normalize(path.join(__dirname, rel));
-    if (!file.startsWith(path.join(__dirname, 'app') + path.sep) &&
-        !file.startsWith(path.join(__dirname, 'assets') + path.sep)) return new Response('Not found', { status: 404 });
+    const ok = ['app', 'assets', path.join('node_modules', '@techstark', 'opencv-js', 'dist')]
+      .some((d) => file.startsWith(path.join(__dirname, d) + path.sep));
+    if (!ok) return new Response('Not found', { status: 404 });
     return net.fetch(pathToFileURL(file).toString());
   });
   createWindow();
